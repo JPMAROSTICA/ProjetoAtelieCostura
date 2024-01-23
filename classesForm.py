@@ -250,6 +250,11 @@ class FormularioLojas(GerenteDeForm):
         self.entryData = ''
         self.checkUrgencia = False
         self.janela = ctk.CTk()
+        self.listBox = CTkListbox(self.janela,
+                             width=310,
+                             height=210,
+                             hover_color='black',
+                             )
 
         super().__init__()
 
@@ -304,6 +309,34 @@ class FormularioLojas(GerenteDeForm):
             if linha == 600:
                 linha = 300
                 coluna += 300
+
+    def formatarFormulario(self):
+        self.entryBoleta = ctk.CTkEntry(self.janela,placeholder_text="Boleta",width=200)
+        self.entryBoleta.place(x=590,y=320)
+
+        self.entryAjuste = ctk.CTkEntry(self.janela,placeholder_text="Número Do Ajuste",width=200)
+        self.entryAjuste.place(x=590,y=360)
+
+        self.entryCor = ctk.CTkEntry(self.janela,placeholder_text="Número Da Cor",width=200)
+        self.entryCor.place(x=590,y=400)
+
+        self.checkUrgencia = False
+        urgencia = ctk.StringVar(value="off")
+        checkUrgencia = ctk.CTkCheckBox(self.janela,text='URGÊNCIA',hover_color='blue',variable=urgencia,onvalue='on',offvalue='off',command=self.changeCheckBoxUrgencia)
+        checkUrgencia.place(x=590,y=440)
+
+    def gerarListBox(self):
+        self.listBox = CTkListbox(self.janela,
+                             width=310,
+                             height=210,
+                             hover_color='black',
+                             )
+
+        if len(self.dadosDosAjustes["Ajuste"]) > 0:
+            for ajustes in self.dadosDosAjustes["Ajuste"]:
+                self.listBox.insert(END, ajustes)
+
+        self.listBox.place(x=800,y=320)
 
     def gerarFormsDeEntradaDeServicos(self):
         titulo = ctk.CTkLabel(self.janela, text="DADOS",
@@ -364,19 +397,7 @@ class FormularioLojas(GerenteDeForm):
         self.dadosDosAjustes["Valor"].append(self.objAjustes.get_valor(ajuste))
         self.dadosDosAjustes["Data"].append(date)
 
-    def gerarListBox(self):
-        listbox = CTkListbox(self.janela,
-                             width=310,
-                             height=210,
-                             hover_color='black',
-                             )
-
-
-        if len(self.dadosDosAjustes["Ajuste"]) > 0:
-            for ajustes in self.dadosDosAjustes["Ajuste"]:
-                listbox.insert(END, ajustes)
-
-        listbox.place(x=800,y=320)
+        return nomeDoAjuste
 
     def apresentarONumeroDeAjustesEHoras(self):
         tempo = self.operadores.formatarTempoPadraoHorasMinutos(self.dadosDosAjustes["Tempo"])
@@ -399,6 +420,7 @@ class FormularioLojas(GerenteDeForm):
         loja = str(self.entryLoja.get())
         date = self.validadores.generateDayTime() if str(self.entryData.get()) == "" else self.entryData.get()
 
+
         #VALIDAMOS OS DADOS NECESSÁRIOS
         #o método verifyBlankFields retornará True quando o campo estiver em branco
         if self.validadores.verifyBlankFields(ajuste) or self.validadores.verifyBlankFields(cor) or self.validadores.verifyBlankFields(loja):
@@ -416,8 +438,10 @@ class FormularioLojas(GerenteDeForm):
             self.gerarLabelDeErro('NotFound')
             return
 
-        self.inserirDadosValidadosEmListas(ajuste,cor,boleta,loja,date)
-        self.gerarFormsDeEntradaDeServicos()
+        ajustes = self.inserirDadosValidadosEmListas(ajuste,cor,boleta,loja,date)
+        self.listBox.insert(END, ajustes)
+        self.apresentarONumeroDeAjustesEHoras()
+        self.formatarFormulario()
 
     def gerarFormulario(self):
         #CRIAMOS A JANELA
@@ -460,6 +484,7 @@ class FormularioLojas(GerenteDeForm):
 
             self.gerarFormsDeEntradaDeServicos()
             self.gerarFormsDeEntradaLojaEDataButtonGerador()
+
 
 
 
